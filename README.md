@@ -3,7 +3,8 @@ A PHP library for using the mysql framwork for .csv management.
 
 # Setup
 Put the config.php file in the root directory of your webserver. 
-After that you can put the Mycsv.php file anywhere in your directory. As long as you include it right it will be accesible from anywhere on your webserver. You can simple use the sql language for .csv files. 
+After that you can put the Mycsv.php file anywhere in your directory. As long as you include it right it will be accesible from 
+anywhere on your webserver. You can simple use the sql language for .csv files. 
 
 # Example
 ```php
@@ -26,7 +27,8 @@ email,
 reg_date [timestamp]        //[timestamp] means the current date of writing the data to the .csv file. 
 )";
 
-//This 'sql' statement create a file MyGuests.csv in de directory "/data/myDB/" with the columns id,firstname,lastname,email and reg_date
+//This 'sql' statement create a file MyGuests.csv in de directory "/data/myDB/" 
+with the columns id,firstname,lastname,email and reg_date
 
 if ($conn->query($sql) == true) {
     echo "Table MyGuests created successfully";
