@@ -163,6 +163,23 @@ class mycsv {
     fclose($csvfile);
     return $data[$line];
    }
+  
+  private function getCel($file, $line, $column) {
+    $csvfile = fopen($file,'rb');
+    while(false !== ($csv = fgetcsv($csvfile))) {
+      $data[] = $csv;
+    }
+    fclose($csvfile);
+    $place = array_search($column, $data[0]);
+    echo "___Place: ". $place;
+    
+    return $data[$line][$place];
+   }
+  
+  private function lastLineNum($file) {
+    $fp = file($file);     
+    return count($fp) - 1;
+   }
 
 }
 
