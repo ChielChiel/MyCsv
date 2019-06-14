@@ -11,7 +11,8 @@ anywhere on your webserver. You can simple use the sql language for .csv files.
 require("../config.php"); //sets Root dir so that all file paths are relative to the webservers root
 require("includes/Mycsv.php"); //The Mycsv class
 
-$conn = new mycsv("/data/", "myDB"); //folder where your "databases" are stored and the name of your "database" aka folder. So the location is from the root of your directory "/data/myDB/". In here will your tables or .csv files be stored.
+$conn = new mycsv("/data/", "myDB"); //folder where your "databases" are stored and the name of your "database" aka folder. 
+//So the location is from the root of your directory "/data/myDB/". In here will your tables or .csv files be stored.
 
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
@@ -28,7 +29,7 @@ reg_date [timestamp]        //[timestamp] means the current date of writing the 
 )";
 
 //This 'sql' statement create a file MyGuests.csv in de directory "/data/myDB/" 
-with the columns id,firstname,lastname,email and reg_date
+//with the columns id,firstname,lastname,email and reg_date
 
 if ($conn->query($sql) == true) {
     echo "Table MyGuests created successfully";
