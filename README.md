@@ -22,9 +22,6 @@ There is a way to connect to the location of the 'databases' or folder and you c
 ### 'Databases location'
 The following code connects to the folder where all your 'databases' are stored:
 ```php
-require("../config.php"); //sets Root dir so that all file paths are relative to the webservers root
-require("includes/Mycsv.php"); //The Mycsv class
-
 $conn = new mycsv("/data/"); //The location where your 'databases' will be created is (from root) /data/. 
 //So the location is from the root of your directory "/data/myDB/". In here will your tables or .csv files be stored.
 ```
