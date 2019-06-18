@@ -5,10 +5,11 @@ class mycsv {
   public $connect_error = false;
   public $sql;
   public $error;
-  private $csvLocation;
-  private $connection;
-  private $dbname;
-  private $dbLocation;
+  public $insert_id;
+  protected $csvLocation;
+  protected $connection;
+  protected $dbname;
+  protected $dbLocation;
   
   //https://www.w3schools.com/php/php_ref_directory.asp
   //sets up connection to directory with csv tables.
@@ -43,9 +44,9 @@ class mycsv {
   }
   
   public function query($sql) {
+    substr($sql, -1) != ";" ? $sql = $sql . ";" : $sql; //checks whether to add a ; or not
     $this->sql = $sql;
     $prepSql = explode(' ', $sql);
-    //print_r($prepSql);
     
     switch(strtolower($prepSql[0])) { // switch over what kind of sql statement the $sql is.
       case "create": //second word was create so its a create statement.
@@ -81,7 +82,7 @@ class mycsv {
          }
         break;
       case "insert":
-        if(strtolower($prepSql[1]) == "into") {
+       if(strtolower($prepSql[1]) == "into") {
          //complete path to the .csv file or table
          $completePath = $this->completePath($prepSql[2]);
          //the fields extracted from the sql query to write to 
@@ -100,6 +101,7 @@ class mycsv {
          foreach ($dif as $item) { 
            array_splice($dataToWrite, array_search($item, $fields), 0,array('temp'));
          }
+         
          //The final array to be written to the csv table
          $final = array();
          for($i=0; $i < count($fields); $i++) {
@@ -107,9 +109,10 @@ class mycsv {
            $cellData = $this->getCel($completePath, $this->lastLineNum($completePath), $fields[$i]);
             if($cellData == $fields[$i]) { //no data in the .csv file yet. It is the table column. So start the [ai] at 1
              $cellData = 1;
-           } else { //if there is already a number in place, add 1 to that one.
+            } else { //if there is already a number in place, add 1 to that one.
               $cellData = ((int) preg_replace('/[^0-9]/', '', $cellData)) + 1;
-           }
+            }
+            strpos($fields[$i], 'id') !== false ? $this->insert_id = $cellData : $this->insert_id = false;
           } else if (strpos($fields[$i], ' [timestamp]') !== false) { //The column holds a timestamp so put the current time
             $cellData = str_replace('"', "_",(string)date('d-m-Y H:i:s'));
           } else { //just normal, remove the " and '  
@@ -124,7 +127,11 @@ class mycsv {
        } 
         break;
       case "select":
-        echo "selecteer een waarde uit een database " . $prepSql[1];
+        //echo "selecteer een waarde uit een database " . $prepSql[1] . ";";
+        //echo $this->completePath("MyGuests"); 
+        return new result($this->csvLocation, str_replace("/","",$this->dbname), $this->sql);
+         
+        
         break;
       case "update":
         echo "up";
@@ -140,8 +147,13 @@ class mycsv {
     //echo $this->sql;
   }
 
+  
+   
+  
+  
+  
   //Returns string between $start and $end 
-  private function get_string_between($string, $start, $end) {
+  protected function get_string_between($string, $start, $end) {
     $string = ' ' . $string;
     $ini = strpos($string, $start);
     if ($ini == 0) return '';
@@ -151,36 +163,100 @@ class mycsv {
   }
   
   //Returns the complete fall path to $table.csv
-  private function completePath($table) {
+  protected function completePath($table) {
+    //echo "csv location: " . $this->csvLocation . "<br><br>";
     return $this->csvLocation . "/" . str_replace("/","",$this->dbname) . "/" . $table . ".csv";
   }
 
-   private function getLine($file, $line) {
+  protected function getLine($file, $line) {
     $csvfile = fopen($file,'rb');
     while(false !== ($csv = fgetcsv($csvfile))) {
       $data[] = $csv;
     }
     fclose($csvfile);
     return $data[$line];
-   }
+  }
   
-  private function getCel($file, $line, $column) {
-    $csvfile = fopen($file,'rb');
+  protected function getCel($file, $line, $column) {
+    $csvfile = fopen($file);
     while(false !== ($csv = fgetcsv($csvfile))) {
       $data[] = $csv;
     }
     fclose($csvfile);
-    $place = array_search($column, $data[0]);
-    echo "___Place: ". $place;
-    
+    $place = array_search($column, $data[0]);    
     return $data[$line][$place];
    }
   
-  private function lastLineNum($file) {
+  //returns the number of lines in a file
+  protected function lastLineNum($file) {
     $fp = file($file);     
     return count($fp) - 1;
    }
 
 }
+class result extends mycsv {
+  public $num_rows;
+  public $sql;
+  private $i;
+  private $gehad;
+  protected $csvLocation;
+  protected $dbname;
+  
+  
+  function __construct($csvLoc, $dbname, $sql) {
+    $this->sql = $sql;
+    $this->csvLocation = $csvLoc;
+    $this->dbname = $dbname;
+    $this->num_rows = 5;
+    $this->gehad = 0;
+    
+  }
+  
+  public function fetch_assoc() {
+    $this->i = $this->i + 1;
+    $prepSql = explode(' ', $this->sql);
+    
+    $allColumns = array();
+//     echo "cols " . $this->getColumns($this->completePath("MyGuests"));
+    $temp = explode(',',$this->getColumns($this->completePath("MyGuests")));
+//     print_r($temp);
+    foreach ($temp as $column) {
+      $column = str_replace(' [timestamp]', '',str_replace(' [ai]','', $column));
+      array_push($allColumns,$column);
+    }
+    
+    print_r($allColumns);
+      //all data to select is between SELECT and FROM
+    $toGet = trim($this->get_string_between(strtolower($this->sql), "select", "from"));
+    
+    if($toGet == "*") { //get everything
+      echo "alles";
+    } else {
+      explode(',',$toGet);
+    }
+    //echo $this->completePath("MyGuests");
+    
+    
+    
+    
+    
+    if($this->i < 1) {
+      return array("id" => 22, "firstname" => "chiel", "lastname" => "sgouten");
+    }
+   }
+  
+  protected function getColumns($file) {
+    $fp = fopen($file,'rb');
+    return fgets($fp);
+  }
+  
+  
+  
+}
+
+
 
 ?>
+
+
+
