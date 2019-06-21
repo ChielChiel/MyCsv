@@ -31,7 +31,7 @@ $conn = new mycsv("/data/", "myDB"); //folder where your "databases" are stored 
 //So the location is from the root of your directory "/data/myDB/". In here will your tables or .csv files be stored.
 ```
 
-### conections
+### Conections
 To check whether or not the connection, and thus mycsv could find the given folder, use the following statement:
 ```php
 if ($conn->connect_error) {
