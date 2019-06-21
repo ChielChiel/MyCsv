@@ -30,6 +30,8 @@ $conn = new mycsv("/data/"); //The location where your 'databases' will be creat
 $conn = new mycsv("/data/", "myDB"); //folder where your "databases" are stored and the name of your "database" aka folder. 
 //So the location is from the root of your directory "/data/myDB/". In here will your tables or .csv files be stored.
 ```
+
+###conections
 To check whether or not the connection, and thus mycsv could find the given folder, use the following statement:
 ```php
 if ($conn->connect_error) {
@@ -37,7 +39,10 @@ if ($conn->connect_error) {
 } 
 echo "Connected successfully";
 ```
-
+To close a connection and in this case the directory use the following:
+```php
+$conn->close();
+```
 ## The use of sql statements
 
 ```php
@@ -58,7 +63,4 @@ if ($conn->query($sql) == true) {
 } else {
     echo "Error creating table: " . $conn->error;
 }
-
-$conn->close();
-
 ```
