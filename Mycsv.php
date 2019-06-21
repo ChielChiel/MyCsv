@@ -201,7 +201,7 @@ class result extends mycsv {
   private $gehad;
   protected $csvLocation;
   protected $dbname;
-  
+  protected $table;
   
   function __construct($csvLoc, $dbname, $sql) {
     $this->sql = $sql;
@@ -215,33 +215,42 @@ class result extends mycsv {
   public function fetch_assoc() {
     $this->i = $this->i + 1;
     $prepSql = explode(' ', $this->sql);
+    $prepSqlLower = explode(' ', strtolower($this->sql));
+    $this->table = str_replace(';', '', trim($prepSql[array_search("from", $prepSqlLower) + 1]));
+    $completePath = $this->completePath($this->table);   
+    
     
     $allColumns = array();
-//     echo "cols " . $this->getColumns($this->completePath("MyGuests"));
-    $temp = explode(',',$this->getColumns($this->completePath("MyGuests")));
-//     print_r($temp);
+    $temp = explode(',',$this->getColumns($completePath));
     foreach ($temp as $column) {
-      $column = str_replace(' [timestamp]', '',str_replace(' [ai]','', $column));
-      array_push($allColumns,$column);
+      $column = str_replace(' [ai]','', $column);
+      $column = str_replace('[timestamp]', '',$column);
+      array_push($allColumns,trim($column));
     }
     
-    print_r($allColumns);
-      //all data to select is between SELECT and FROM
+    //all data to select is between SELECT and FROM
     $toGet = trim($this->get_string_between(strtolower($this->sql), "select", "from"));
     
     if($toGet == "*") { //get everything
-      echo "alles";
+      
+      $records = $this->getRecords($completePath);      
+      //echo "<br><br>alles: ";print_r($records);
+      
+      
     } else {
       explode(',',$toGet);
     }
-    //echo $this->completePath("MyGuests");
     
     
+    $this->num_rows = count($records);
     
     
-    
-    if($this->i < 1) {
-      return array("id" => 22, "firstname" => "chiel", "lastname" => "sgouten");
+    if($this->i < $this->num_rows) {
+      $toReturn = array();
+      for($i=0; $i<count($allColumns); $i++) {
+        $toReturn[$allColumns[$i]] = $records[$this->i][$i];
+      }
+      return $toReturn;
     }
    }
   
