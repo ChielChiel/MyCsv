@@ -238,7 +238,31 @@ class result extends mycsv {
       
       
     } else {
-      explode(',',$toGet);
+      //       print_r($toGet);
+      $temp = array();
+      foreach($toGet as $column) {
+        array_push($temp, trim($column));
+        if(in_array(trim($column), $allColumns) == false) {
+          $this->num_rows = 0;
+          echo "oh boi";
+          return false;
+        }
+      }
+      $toGet = $temp;
+      unset($temp);
+       $dif = array_diff($allColumns,$toGet);      
+      $records = $this->getRecords($completePath);
+      $temp = array();
+      foreach($records as $record) {
+        $i = 0;
+        foreach($dif as $toDelete) {
+        array_splice($record, (array_search($toDelete, $allColumns) - $i), 1);
+        $i++;
+        } 
+      }
+   
+      $allColumns = $toGet;
+
     }
     
     
