@@ -199,6 +199,8 @@ class result extends mycsv {
   public $sql;
   private $i;
   private $gehad;
+  private $records;
+  private $allColumns;
   protected $csvLocation;
   protected $dbname;
   protected $table;
@@ -207,13 +209,10 @@ class result extends mycsv {
     $this->sql = $sql;
     $this->csvLocation = $csvLoc;
     $this->dbname = $dbname;
-    $this->num_rows = 5;
+    $this->num_rows = 0;
     $this->gehad = 0;
+    $this->i = -1;
     
-  }
-  
-  public function fetch_assoc() {
-    $this->i = $this->i + 1;
     $prepSql = explode(' ', $this->sql);
     $prepSqlLower = explode(' ', strtolower($this->sql));
     $this->table = str_replace(';', '', trim($prepSql[array_search("from", $prepSqlLower) + 1]));
@@ -232,47 +231,63 @@ class result extends mycsv {
     $toGet = trim($this->get_string_between(strtolower($this->sql), "select", "from"));
     
     if($toGet == "*") { //get everything
-      
       $records = $this->getRecords($completePath);      
-      //echo "<br><br>alles: ";print_r($records);
-      
-      
     } else {
-      //       print_r($toGet);
+      $toGet = explode(',',trim($toGet));
       $temp = array();
       foreach($toGet as $column) {
         array_push($temp, trim($column));
         if(in_array(trim($column), $allColumns) == false) {
           $this->num_rows = 0;
-          echo "oh boi";
+          $this->records = false;
           return false;
         }
       }
       $toGet = $temp;
       unset($temp);
-       $dif = array_diff($allColumns,$toGet);      
+      
+      $temp = array();
+      foreach($allColumns as $column) {
+        foreach($toGet as $val2) {
+          if($val2 == $column){ $temp[] = $val2; }
+        }
+      }
+      
+      $toGet = $temp;
+      unset($temp);
+      
+      $dif = array_diff($allColumns,$toGet);
       $records = $this->getRecords($completePath);
       $temp = array();
       foreach($records as $record) {
         $i = 0;
         foreach($dif as $toDelete) {
-        array_splice($record, (array_search($toDelete, $allColumns) - $i), 1);
-        $i++;
+          $record[array_search($toDelete, $allColumns)] = "9040f923b4c7ca8c972b87be0581e1e9c54ab183";
         } 
+        $record = preg_grep("/9040f923b4c7ca8c972b87be0581e1e9c54ab183/", $record, PREG_GREP_INVERT);
+        $record = array_values($record);
+        array_push($temp, $record);
       }
-   
+      $records = $temp;
       $allColumns = $toGet;
-
     }
     
+    $this->num_rows = count($records) -1 ;
+    $this->allColumns = $allColumns;
+    $this->records = $records;
     
-    $this->num_rows = count($records);
-    
-    
-    if($this->i < $this->num_rows) {
+  }
+  
+  public function fetch_assoc() {
+    if($this->num_rows =< 0) {
+      $this->error = "No results found in " . $this->dbname . ". csv file";
+      return false;
+    }
+    $this->i = $this->i + 1;
+    if($this->i <= $this->num_rows) {
       $toReturn = array();
-      for($i=0; $i<count($allColumns); $i++) {
-        $toReturn[$allColumns[$i]] = $records[$this->i][$i];
+      for($i=0; $i<count($this->allColumns); $i++) {
+        $toReturn[$this->allColumns[$i]] = $this->records[$this->i][$i];
       }
       return $toReturn;
     }
