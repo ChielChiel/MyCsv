@@ -279,7 +279,7 @@ class result extends mycsv {
   }
   
   public function fetch_assoc() {
-    if($this->num_rows =< 0) {
+    if($this->num_rows <= 0) {
       $this->error = "No results found in " . $this->dbname . ". csv file";
       return false;
     }
